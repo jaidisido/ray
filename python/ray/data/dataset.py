@@ -2650,6 +2650,7 @@ class Dataset:
         *,
         filesystem: Optional["pyarrow.fs.FileSystem"] = None,
         try_create_dir: bool = True,
+        partition_cols: Optional[List[str]] = None,
         arrow_open_stream_args: Optional[Dict[str, Any]] = None,
         block_path_provider: BlockWritePathProvider = DefaultBlockWritePathProvider(),
         arrow_parquet_args_fn: Callable[[], Dict[str, Any]] = lambda: {},
@@ -2722,6 +2723,7 @@ class Dataset:
             ParquetDatasource(),
             ray_remote_args=ray_remote_args,
             path=path,
+            partition_cols=partition_cols,
             dataset_uuid=self._uuid,
             filesystem=filesystem,
             try_create_dir=try_create_dir,
@@ -2738,6 +2740,7 @@ class Dataset:
         *,
         filesystem: Optional["pyarrow.fs.FileSystem"] = None,
         try_create_dir: bool = True,
+        partition_cols: Optional[List[str]] = None,
         arrow_open_stream_args: Optional[Dict[str, Any]] = None,
         block_path_provider: BlockWritePathProvider = DefaultBlockWritePathProvider(),
         pandas_json_args_fn: Callable[[], Dict[str, Any]] = lambda: {},
@@ -2820,6 +2823,7 @@ class Dataset:
             JSONDatasource(),
             ray_remote_args=ray_remote_args,
             path=path,
+            partition_cols=partition_cols,
             dataset_uuid=self._uuid,
             filesystem=filesystem,
             try_create_dir=try_create_dir,
@@ -2895,6 +2899,7 @@ class Dataset:
         *,
         filesystem: Optional["pyarrow.fs.FileSystem"] = None,
         try_create_dir: bool = True,
+        partition_cols: Optional[List[str]] = None,
         arrow_open_stream_args: Optional[Dict[str, Any]] = None,
         block_path_provider: BlockWritePathProvider = DefaultBlockWritePathProvider(),
         arrow_csv_args_fn: Callable[[], Dict[str, Any]] = lambda: {},
@@ -2974,6 +2979,7 @@ class Dataset:
             CSVDatasource(),
             ray_remote_args=ray_remote_args,
             path=path,
+            partition_cols=partition_cols,
             dataset_uuid=self._uuid,
             filesystem=filesystem,
             try_create_dir=try_create_dir,
@@ -3379,6 +3385,17 @@ class Dataset:
             ray_remote_args["scheduling_strategy"] = NodeAffinitySchedulingStrategy(
                 ray.get_runtime_context().get_node_id(),
                 soft=False,
+            )
+
+        partition_cols: Optional[List[str]] = write_args.get("partition_cols", None)
+
+        if partition_cols:
+            grouped_dataset = self.groupby(partition_cols).map_groups(lambda x: x)
+
+            return grouped_dataset.write_datasource(
+                datasource=datasource,
+                ray_remote_args=ray_remote_args,
+                **write_args,
             )
 
         if type(datasource).write != Datasource.write:

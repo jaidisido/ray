@@ -3387,7 +3387,7 @@ class Dataset:
                 soft=False,
             )
 
-        partition_cols: Optional[List[str]] = write_args.get("partition_cols", None)
+        partition_cols: Optional[List[str]] = write_args.pop("partition_cols", None)
 
         if partition_cols:
             grouped_dataset = self.groupby(partition_cols).map_groups(lambda x: x)

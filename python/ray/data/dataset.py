@@ -3388,6 +3388,7 @@ class Dataset:
             )
 
         partition_cols: Optional[List[str]] = write_args.pop("partition_cols", None)
+        # block_path_provider: BlockWritePathProvider = write_args.pop("block_path_provider", None)
 
         if partition_cols:
             grouped_dataset = self.groupby(partition_cols).map_groups(lambda x: x)
@@ -3395,6 +3396,7 @@ class Dataset:
             return grouped_dataset.write_datasource(
                 datasource=datasource,
                 ray_remote_args=ray_remote_args,
+                # block_path_provider=block_path_provider,
                 **write_args,
             )
 

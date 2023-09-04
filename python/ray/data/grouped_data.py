@@ -301,9 +301,10 @@ class GroupedData:
 
             boundaries = []
             # Get the keys of the batch in numpy array format
-            keys = block_accessor.to_numpy(self._key)
+
+            keys = self._key
             start = 0
-            while start < keys.size:
+            while start < len(keys):
                 end = start + np.searchsorted(keys[start:], keys[start], side="right")
                 boundaries.append(end)
                 start = end

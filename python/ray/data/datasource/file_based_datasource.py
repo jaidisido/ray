@@ -369,34 +369,25 @@ class FileBasedDatasource(Datasource):
                             **write_args,
                         )
             else:
-                if write_args.get("partition_cols"):
+                write_path = block_path_provider(
+                    path,
+                    filesystem=filesystem,
+                    dataset_uuid=dataset_uuid,
+                    task_index=ctx.task_idx,
+                    block_index=block_idx,
+                    file_format=file_format,
+                )
+                logger.get_logger().debug(f"Writing {write_path} file.")
+                with _open_file_with_retry(
+                    write_path,
+                    lambda: fs.open_output_stream(write_path, **open_stream_args),
+                ) as f:
                     _write_block_to_file(
-                        _unwrap_protocol(path),
+                        f,
                         block,
                         writer_args_fn=write_args_fn,
-                        filesystem=fs,
                         **write_args,
                     )
-                else:
-                    write_path = block_path_provider(
-                        path,
-                        filesystem=filesystem,
-                        dataset_uuid=dataset_uuid,
-                        task_index=ctx.task_idx,
-                        block_index=block_idx,
-                        file_format=file_format,
-                    )
-                    logger.get_logger().debug(f"Writing {write_path} file.")
-                    with _open_file_with_retry(
-                        write_path,
-                        lambda: fs.open_output_stream(write_path, **open_stream_args),
-                    ) as f:
-                        _write_block_to_file(
-                            f,
-                            block,
-                            writer_args_fn=write_args_fn,
-                            **write_args,
-                        )
 
             num_rows_written += block.num_rows()
             block_idx += 1
@@ -430,7 +421,7 @@ class FileBasedDatasource(Datasource):
 
     def _write_block(
         self,
-        f: Union["pyarrow.NativeFile", str],
+        f: "pyarrow.NativeFile",
         block: BlockAccessor,
         writer_args_fn: Callable[[], Dict[str, Any]] = lambda: {},
         **writer_args,

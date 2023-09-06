@@ -53,7 +53,7 @@ class ParquetBaseDatasource(FileBasedDatasource):
         import pyarrow.parquet as pq
 
         writer_args = _resolve_kwargs(writer_args_fn, **writer_args)
-        partition_cols = writer_args.pop("partition_cols")
+        partition_cols = writer_args.pop("partition_cols", None)
 
         if partition_cols:
             pq.write_to_dataset(

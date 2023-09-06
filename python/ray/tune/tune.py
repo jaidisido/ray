@@ -680,6 +680,11 @@ def run(
         local_path, remote_path = None, None
         sync_config = sync_config or SyncConfig()
         # TODO(justinvyu): Fix telemetry for the new persistence.
+
+        # TODO(justinvyu): Finalize the local_dir vs. env var API in 2.8.
+        # For now, keep accepting both options.
+        if local_dir is not None:
+            os.environ["RAY_AIR_LOCAL_CACHE_DIR"] = local_dir
     else:
         (
             storage_path,
@@ -740,22 +745,17 @@ def run(
             DeprecationWarning,
         )
         checkpoint_config.checkpoint_at_end = checkpoint_at_end
-    if checkpoint_keep_all_ranks:
+
+    if chdir_to_trial_dir != _DEPRECATED_VALUE:
         warnings.warn(
-            "checkpoint_keep_all_ranks is deprecated and will be removed. "
-            "use checkpoint_config._checkpoint_keep_all_ranks instead.",
+            "`chdir_to_trial_dir` is deprecated and will be removed. "
+            f"Use the {RAY_CHDIR_TO_TRIAL_DIR} environment variable instead. "
+            "Set it to 0 to disable the default behavior of changing the "
+            "working directory.",
             DeprecationWarning,
         )
-        checkpoint_config._checkpoint_keep_all_ranks = checkpoint_keep_all_ranks
-    if checkpoint_upload_from_workers:
-        warnings.warn(
-            "checkpoint_upload_from_workers is deprecated and will be removed. "
-            "use checkpoint_config._checkpoint_upload_from_workers instead.",
-            DeprecationWarning,
-        )
-        checkpoint_config._checkpoint_upload_from_workers = (
-            checkpoint_upload_from_workers
-        )
+        if chdir_to_trial_dir is False:
+            os.environ[RAY_CHDIR_TO_TRIAL_DIR] = "0"
 
     if chdir_to_trial_dir != _DEPRECATED_VALUE:
         warnings.warn(

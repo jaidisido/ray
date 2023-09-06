@@ -1086,7 +1086,7 @@ def test_parquet_roundtrip_partitioned(fs, data_path):
     df = pd.DataFrame({"one": list(range(6)), "two": ["a", "b", "c", "e", "f", "g"]})
     ds = ray.data.from_pandas([df])
 
-    ds.write_parquet(_unwrap_protocol(data_path), partition_cols=["two"])
+    ds.write_parquet(data_path, partition_cols=["two"], filesystem=fs)
 
     ds2 = ray.data.read_parquet(data_path, parallelism=2, filesystem=fs)
     df2 = ds2.to_pandas()

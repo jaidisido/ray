@@ -41,8 +41,7 @@ transformers
 
 # Ray libraries
 git+https://github.com/ray-project/tune-sklearn@master#tune-sklearn
-git+https://github.com/ray-project/xgboost_ray@master#egg=xgboost_ray
-git+https://github.com/ray-project/lightgbm_ray@main#lightgbm_ray
+watchfiles # Required because sphinx-click doesn't support mocking
 
 # Syntax highlighting
 Pygments==2.13.0
@@ -63,6 +62,8 @@ sphinx-remove-toctrees==0.0.3
 autodoc_pydantic==1.6.1
 sphinx_design==0.4.1
 
+pydantic<2 # Pydantic is required by autodoc_pydantic, but must be <2 for ray
+
 # MyST
 myst-parser==0.15.2
 myst-nb==0.13.1
@@ -72,6 +73,3 @@ jupytext==1.13.6
 
 # Pin urllib to avoid downstream ssl incompatibility issues
 urllib3 < 1.27
-
-# For `serve run --reload` CLI.
-watchfiles==0.19.0

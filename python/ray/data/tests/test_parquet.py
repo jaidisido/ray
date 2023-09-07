@@ -1083,7 +1083,7 @@ def test_parquet_read_spread(ray_start_cluster, tmp_path):
     ],
 )
 @pytest.mark.parametrize("ds_format", ["pyarrow", "pandas"])
-@pytest.mark.parametrize("num_parts", [1, 10])
+@pytest.mark.parametrize("num_parts", [1, 3, 10])
 def test_parquet_roundtrip_partitioned(fs, data_path, ds_format, num_parts):
     items = [{"one": i, "two": chr(ord("a") + i)} for i in range(10)]
 

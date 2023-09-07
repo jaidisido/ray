@@ -1082,9 +1082,16 @@ def test_parquet_read_spread(ray_start_cluster, tmp_path):
         ),
     ],
 )
-def test_parquet_roundtrip_partitioned(fs, data_path):
-    df = pd.DataFrame({"one": list(range(6)), "two": ["a", "b", "c", "e", "f", "g"]})
-    ds = ray.data.from_pandas([df])
+@pytest.mark.parametrize("ds_format", ["pyarrow", "pandas"])
+@pytest.mark.parametrize("num_parts", [1, 10])
+def test_parquet_roundtrip_partitioned(fs, data_path, ds_format, num_parts):
+    items = [{"one": i, "two": chr(ord("a") + i)} for i in range(10)]
+
+    ds = ray.data.from_items(items).map_batches(
+        lambda x: x, batch_size=None, batch_format=ds_format
+    ).repartition(num_parts)
+
+    df = ds.to_pandas()
 
     ds.write_parquet(data_path, partition_cols=["two"], filesystem=fs)
 
